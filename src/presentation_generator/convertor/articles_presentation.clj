@@ -5,7 +5,7 @@
   (let [title (:summary article)
         media (:media article)
         keyVals {:title title :image1 media}]
-    (presentation/get-presentation-data keyVals "1imageText")))
+    (presentation/get-presentation-data keyVals "fullImageText")))
 
 (defn get-presentation-from-article-list [articles]
   (let [presentation-Data (map get-presentation-data-from-article articles)]

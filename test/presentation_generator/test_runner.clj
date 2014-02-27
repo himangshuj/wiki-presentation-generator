@@ -11,5 +11,5 @@
   (monger.core/connect-via-uri! uri))
 (deftest insert-test
   (testing "insert to db"
-    (is (= "Aam Aadmi Party, India" (pmap dbs/insert-presentations presentations)))))
+    (is (= 1 (count (pmap dbs/insert-presentations presentations))))))
 
