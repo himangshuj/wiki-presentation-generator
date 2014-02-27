@@ -7,7 +7,7 @@
 (defn- flatten-article [article]
   (article/get-article (fmt/parse date_format ( article :startDate )) (:headline article) (-> article :asset :media)))
 
-(defn read-file "given an absoulte filename this returns the json" [file-name ]
+(defn read-articles-from-file "given an absoulte filename this returns the json" [file-name ]
   (let [json-map (json/read-str (slurp file-name) :key-fn keyword)
        summary (:text json-map)
        articles (:date json-map)
