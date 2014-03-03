@@ -9,7 +9,7 @@
   (if-let [id (-> node :content first :attrs :href )]
     (html/select nodes [[:li (html/attr= :id (string/replace id "#" ""))]])))
 (defrecord WikiResource [link title summary id])
-(defn extract-data [reference]
+(defn- extract-data "given a reference node, extracts link title and summary" [reference]
   (let [node# (-> reference :content last :content first :content )
         summary (if-let [data (last node#)] (string/replace data "\"" ""))
         titlenode (first (html/select node# [[:a (html/attr= :class "external text")]]))
@@ -19,8 +19,8 @@
         id# (-> (string/split id #"-") last read-string)]
     (WikiResource. link title summary id#)))
 
-(defn fetch-references "given a wiki page fetches a list of non duplicate references" [^String url]
-  (let [nodes (fetch-url url)
+(defn fetch-references "given a wiki page fetches a list of non duplicate references" [^String wiki-title]
+  (let [nodes (fetch-url (str "http://en.wikipedia.org/wiki/" wiki-title ))
         references (html/select nodes [[(html/attr-starts :id "cite")
                                         (html/attr= :class "reference")
                                         (html/but (html/left :sup ))]])
