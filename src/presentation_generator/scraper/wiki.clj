@@ -11,7 +11,7 @@
 (defrecord WikiResource [link title summary id])
 (defn- extract-data "given a reference node, extracts link title and summary" [reference]
   (let [node# (-> reference :content last :content first :content )
-        summary (if-let [data (last node#)] (string/replace data "\"" ""))
+        summary (if-let [data (html/text (last node#))] (string/replace data "\"" ""))
         titlenode (first (html/select node# [[:a (html/attr= :class "external text")]]))
         title (if-let [data (-> titlenode html/text)] (string/replace data "\"" ""))
         link (-> titlenode :attrs :href )

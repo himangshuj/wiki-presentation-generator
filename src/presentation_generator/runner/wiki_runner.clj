@@ -31,7 +31,5 @@
         slides# (sort-by :id slides#)]
     (struct raw-presentation page-title slides#)))
 (defn generate-presentation [^java.util.List wiki-titles]
-  (let [presentations (pmap extract-raw-presentation wiki-titles)
-        presentations# (pmap wp/get-presentation-from-wiki-data presentations)]
-    (pmap dbs/insert-presentations presentations#)))
+    (pmap #(-> % extract-raw-presentation wp/get-presentation-from-wiki-data dbs/insert-presentations ) wiki-titles))
 
