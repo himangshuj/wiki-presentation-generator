@@ -2,7 +2,9 @@
   (:require [presentation-generator.scraper [wiki :as wiki] [html-fetcher :as hf]]
             [net.cgrand.enlive-html :as html]
             [clojure.string :as string]
-            [clojure.set :as set-lib]))
+            [clojure.set :as set-lib]
+            [presentation-generator.convertor.wiki-presentation :as wp]
+            [presentation-generator.runner.insertdb :as dbs]))
 
 (defn- extract-image-src [img-nodes]
   (let [srcs (map #(-> % :attrs :src ) (html/select img-nodes [:img ]))
@@ -18,14 +20,18 @@
 (defstruct raw-presentation :summary :slides )
 (defstruct slide :title :summary :image :id )
 (defn- create-slide [wiki-reference]
-  (println "creating slide for " wiki-reference)
+  (println "creating slide for " (:title wiki-reference))
   (try (if-let [image (extract-image (:link wiki-reference))]
-
-    (struct slide (:title wiki-reference) (:summary wiki-reference) image (:id wiki-reference)))(catch Throwable _ (println wiki-reference))))
+    (struct slide (:title wiki-reference) (:summary wiki-reference) image (:id wiki-reference)))(catch Throwable _
+                                                                                                         (println "[error ]" wiki-reference))))
 (defn extract-raw-presentation "given wiki title name creates a presentation" [page-title]
   (let [references (wiki/fetch-references page-title)
         slides (pmap create-slide references)
         slides# (remove nil? slides)
         slides# (sort-by :id slides#)]
     (struct raw-presentation page-title slides#)))
+(defn generate-presentation [^java.util.List wiki-titles]
+  (let [presentations (pmap extract-raw-presentation wiki-titles)
+        presentations# (pmap wp/get-presentation-from-wiki-data presentations)]
+    (pmap dbs/insert-presentations presentations#)))
 

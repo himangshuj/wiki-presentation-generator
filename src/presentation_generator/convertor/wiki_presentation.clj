@@ -10,4 +10,5 @@
 
 (defn get-presentation-from-wiki-data [wiki-data]
   (let [presentation-Data (map get-presentation-data-from-slide (:slides wiki-data))]
+    (println "converting to presentation")
     (presentation/get-new-presentation presentation-Data (:summary wiki-data))))

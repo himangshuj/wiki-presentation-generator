@@ -11,7 +11,7 @@
 
 (defn- set-logger []
   (let [log (Logger/getLogger "com.gargoylesoftware.htmlunit")]
-    (. log (setLevel Level/SEVERE))))
+    (. log (setLevel Level/INFO))))
 
 (def ^{:private true} silentCss (SilentCssErrorHandler.))
 (set-logger)
@@ -22,9 +22,10 @@
         wc-options (. wc (getOptions))]
     (. wc-options (setJavaScriptEnabled false))
     (. wc-options (setUseInsecureSSL true))
+    (. wc-options (setTimeout 30000))
     (. wc-options (setThrowExceptionOnFailingStatusCode false))
     (. wc (setCssErrorHandler silentCss))
-    (. wc (getPage url))))
+    (try (. wc (getPage url)) (catch Throwable _ nil))))
 (defrecord ScrapeData [targetHtml controlSet page])
 (defn- get-html-page-as-node [url]
   (let [page (get-html-page url)]
