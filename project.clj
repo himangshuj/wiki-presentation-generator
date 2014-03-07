@@ -6,7 +6,8 @@
                  [org.clojure/data.json "0.2.4"]
                  [clj-time "0.6.0"]
                  [enlive "1.1.5"]
-                 [net.sourceforge.htmlunit/htmlunit "2.14"]]
+                 [net.sourceforge.htmlunit/htmlunit "2.14"]
+                 [clojure-opennlp "0.3.2"]]
   :main ^:skip-aot presentation-generator.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
