@@ -7,4 +7,4 @@
     (is (= 1 (:id (first (wiki/fetch-references "Aaron_Swartz")))))))
 (deftest understanding-wiki
   (testing "parsing Aaron Swartz"
-    (is (= "Life and works" (:title (first (wiki/fetch-nodes "Aaron_Swartz" )))))))
+    (is (= "Life and works" (:title (first (wiki/parse-page "Aaron_Swartz" )))))))

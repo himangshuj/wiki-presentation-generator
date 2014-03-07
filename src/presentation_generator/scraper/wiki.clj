@@ -50,7 +50,7 @@
                         :content (string/replace (html/text %) #"\[\d+\]|\"" "")) body)]
       {:title title :body body#})))
 
-(defn fetch-nodes "given a wiki page fetches the paragraph data for english language" [^String wiki-title]
+(defn parse-page "given a wiki page fetches the paragraph data for english language" [^String wiki-title]
   (let [url (java.net.URL. (str "http://en.wikipedia.org/wiki/" wiki-title))
         nodes (html/html-resource url)
         process-wiki-node-fn (process-wiki-node-fn-generator url nodes)
