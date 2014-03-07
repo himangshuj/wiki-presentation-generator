@@ -89,3 +89,7 @@
                    Infogami's wiki platform was used to support the Internet Archive's Open Library project
                     and the web.py web framework that Swartz had created but he felt he needed co-founders to proceed further. Y-Combinator organizers suggested that Infogami merge with Reddit,[29][30] which it did in November 2005.[29][31] Reddit at first found it difficult to make money from the project, but the site later gained in popularity, with millions of users visiting it each month."))))
     ))
+(deftest check-aaron-proper-noun
+  (testing "proper noun weights"
+    (is (= 1 (img-ext/extract-images [{:url "http://www.theguardian.com/technology/2013/jan/13/aaron-swartz"}]
+               "At age 13, Swartz won an ArsDigita Prize, given to young people who create useful, educational, and collaborative noncommercial websites. At age 14, he became a member of the working group that authored the RSS 1.0 web syndication specification.")))))
