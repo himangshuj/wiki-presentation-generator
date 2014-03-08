@@ -58,5 +58,6 @@
         nodes# (partition-by #(= (-> % :attrs :class ) "mw-headline") nodes#)
         nodes# (rest nodes#)
         nodes# (partition 2 nodes#)
-        nodes# (map process-wiki-node-fn nodes#)]
+        nodes# (map process-wiki-node-fn nodes#)
+        nodes# (remove #(-> % :body first :content string/blank?) nodes#)]
     nodes#))

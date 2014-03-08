@@ -14,7 +14,8 @@
 (def ^{:private true} pos-tag (nlp/make-pos-tagger "models/en-pos-maxent.bin"))
 
 (defn- parse-wiki-image [wiki-image-tuple key-tokens key-proper-tokens]
-  (let [image-tokens (-> wiki-image-tuple :text string/lower-case tokenize pos-tag filters/nouns)
+  (let [image-tokens (try (-> wiki-image-tuple :text string/lower-case tokenize pos-tag filters/nouns)
+                       (catch Throwable _ []))
         image-tokens# (set (map first image-tokens))
         image-tokens-weight (- 0 (count (clj-set/intersection image-tokens# key-tokens))
                               (* 2 (count (clj-set/intersection image-tokens# key-proper-tokens))))]
@@ -74,10 +75,12 @@
      get-image) (:url url-node) key-tokens key-proper-tokens))
 
 (defn extract-images [url-nodes key-string]
-  (let [key-tokens (filters/nouns (pos-tag (tokenize (string/lower-case key-string))))
+  (let [key-tokens (try (filters/nouns (pos-tag (tokenize (string/lower-case key-string)))) (catch Throwable  _ []))
         key-tokens# (set (map first key-tokens))
-        key-proper-tokens (filters/proper-nouns (pos-tag (tokenize  key-string)))
+        key-proper-tokens (try (filters/proper-nouns (pos-tag (tokenize key-string))) (catch Throwable  _ []) )
         key-proper-tokens# (set (map #(-> % first string/lower-case) key-proper-tokens))
-        images (pmap #(extract-image % key-tokens# key-proper-tokens#) url-nodes)]
+        images (pmap #(extract-image % key-tokens# key-proper-tokens#) url-nodes)
+        images# (remove nil? images)
+        images# (filter #(#{"jpg","png","gif"} (apply str (take-last 3 (:url %)))) images#)]
     (println "extracting image for " key-string)
-    (remove nil? images)))
+    (remove nil? images#)))
