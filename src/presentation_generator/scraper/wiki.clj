@@ -32,8 +32,8 @@
 (defn- get-reference-link [nodes href]
   (let [li-node (first (html/select nodes [[:li (html/attr= :id (string/replace href #"#" ""))]]))
         href-node (first (html/select li-node [[:a (html/attr= :class "external text")]]))]
-    (-> href-node :attrs :href)))
-(defn- expan-url [url-node nodes url]
+    (-> href-node :attrs :href )))
+(defn- expand-url [url-node nodes url]
   (let [href (-> url-node :attrs :href )
         type (if (. href (startsWith "/wiki")) :wiki :external )
         href# (if (= type :wiki )
@@ -41,7 +41,7 @@
                 (get-reference-link nodes href))]
     {:url href# :type type}))
 (defn parse-urls [url-str nodes url]
-  (map #(expan-url % nodes url) url-str))
+  (map #(expand-url % nodes url) url-str))
 (defn- process-wiki-node-fn-generator [url nodes]
   (fn [wiki-node]
     (let [title (-> wiki-node first first html/text)
@@ -49,6 +49,27 @@
           body# (map #(hash-map :urls (parse-urls (html/select % [:a ]) nodes url)
                         :content (string/replace (html/text %) #"\[\d+\]|\"" "")) body)]
       {:title title :body body#})))
+(defn get-title [wiki-nodes]
+  (let [title (html/select wiki-nodes [:h1 ])
+        title# (-> title first html/text)
+        image (first (html/select wiki-nodes [[:table (html/attr-has :class "infobox")]]))
+        image# (html/select image [[:a (html/attr= :class "image")]])
+        image# (:attrs (first (html/select image# [:img ])))
+        images# (cons (:src image#) (if-let [srcset (:srcset image#)] (string/split srcset #",") []))
+        image# (last images#)]
+    (if image#
+      (let
+        [image# (string/trim image#)
+         image# (first (string/split image# #"\s"))]
+        {:title title# :image image#})
+      (try (let [image# (html/select wiki-nodes [[:a (html/attr= :class "image")]])
+            image# (:attrs (first (html/select image# [:img ])))
+            images# (cons (:src image#) (if-let [srcset (:srcset image#)] (string/split srcset #",") []))
+            image# (last images#)
+            image# (string/trim image#)
+            image# (first (string/split image# #"\s"))]
+        {:title title# :image image#}
+        ) (catch Throwable _ {:title title# })))))
 
 (defn parse-page "given a wiki page fetches the paragraph data for english language" [^String wiki-title]
   (let [url (java.net.URL. (str "http://en.wikipedia.org/wiki/" wiki-title))
@@ -59,5 +80,6 @@
         nodes# (rest nodes#)
         nodes# (partition 2 nodes#)
         nodes# (map process-wiki-node-fn nodes#)
-        nodes# (remove #(-> % :body first :content string/blank?) nodes#)]
-    nodes#))
+        nodes# (remove #(-> % :body first :content string/blank?) nodes#)
+        title (get-title nodes)]
+    {:title title :nodes nodes#}))
