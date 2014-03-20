@@ -15,16 +15,26 @@
 
 (defn convert-wiki-article [wiki-title]
   (let [parsed-wiki (wk/parse-page wiki-title)
-        slides (flatten (pmap parse-node parsed-wiki))
+        title-slide (:title parsed-wiki)
+        _ (println "title slide" title-slide)
+        slides (flatten (pmap parse-node (:nodes parsed-wiki)))
         _ (println "Raw slides " (count slides))
+
         slides# (filter :image slides)
-        slides# (filter #(<  (:weight %) 0) slides#)
+        slides# (filter #(< (:weight %) 0) slides#)
         _ (println "non empty  and related slides " (count slides#))
-        slides# (filter #(try (let [image-url (:image %)
-                                    image-url# (string/replace image-url #"^//" "http://")
-                                    url (java.net.URL. image-url#)]
-                                (with-open [stream (. url (openStream))]
-                                  (> (. stream (available)) 500))) (catch Throwable _ false)) slides#)
-        _ (println "valid slides " (count slides#))
-        presentation (wp/get-presentation-from-wiki-data-nlp slides#)]
-    (dbs/insert-presentations presentation)))
+
+        ]
+    (if title-slide
+      (let
+        [title-slide# (struct intermediate-article (:title title-slide) "created by sokratik" (:image title-slide))
+         slides# (filter #(try (let [image-url (:image %)
+                                     image-url# (string/replace image-url #"^//" "http://")
+                                     url (java.net.URL. image-url#)]
+                                 (with-open [stream (. url (openStream))]
+                                   (> (. stream (available)) 500))) (catch Throwable _ false)) slides#)
+         _ (println "valid slides " (count slides#))
+         slides# (cons title-slide# slides#)
+         _ (println "title " title-slide#)
+         presentation (wp/get-presentation-from-wiki-data-nlp slides#)]
+        (dbs/insert-presentations presentation)))))
